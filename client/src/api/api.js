@@ -65,11 +65,6 @@ export async function getFAQs(params) {
   return data;
 }
 
-export async function adminGetFaqs(page = 1) {
-  const { data } = await api.get('/admin/faqs', { params: { page } });
-  return data;
-}
-
 export async function adminCreateFAQ(body) {
   const { data } = await api.post('/admin/faqs', body);
   return data;
@@ -85,50 +80,19 @@ export async function adminDeleteFAQ(id) {
   return data;
 }
 
-export async function adminDeduplicateFaqs() {
-  const { data } = await api.post('/admin/faqs/deduplicate');
-  return data;
-}
-
 // Admin Moderation - Answer Submissions
 export async function adminGetModeration(params) {
   const { data } = await api.get('/admin/moderation', { params });
   return data;
 }
 
-export async function adminApproveSubmission(id, { answererXp, askerXp } = {}) {
-  const { data } = await api.post(`/admin/moderation/${id}/approve`, { answererXp, askerXp });
+export async function adminApproveSubmission(id, note) {
+  const { data } = await api.post(`/admin/moderation/${id}/approve`, { adminNote: note });
   return data;
 }
 
-export async function adminRejectSubmission(id) {
-  const { data } = await api.post(`/admin/moderation/${id}/reject`);
-  return data;
-}
-
-export async function adminPromoteSubmission(id, { answererXp, askerXp } = {}) {
-  const { data } = await api.post(`/admin/answers/${id}/promote`, { answererXp, askerXp });
-  return data;
-}
-
-export async function adminAutoModerate() {
-  const { data } = await api.post('/admin/moderation/auto');
-  return data;
-}
-
-// Admin Moderation - Pending Questions
-export async function adminGetPendingQuestions(params) {
-  const { data } = await api.get('/admin/moderation/questions', { params });
-  return data;
-}
-
-export async function adminApproveQuestion(id, { askerXp } = {}) {
-  const { data } = await api.post(`/admin/moderation/questions/${id}/approve`, { askerXp });
-  return data;
-}
-
-export async function adminRejectQuestion(id) {
-  const { data } = await api.post(`/admin/moderation/questions/${id}/reject`);
+export async function adminRejectSubmission(id, note) {
+  const { data } = await api.post(`/admin/moderation/${id}/reject`, { adminNote: note });
   return data;
 }
 
@@ -164,22 +128,6 @@ export async function adminCreateAdmin(body) {
   return data;
 }
 
-// Admin Users APIs
-export async function adminGetUsers() {
-  const { data } = await api.get('/admin/users');
-  return data;
-}
-
-export async function adminAdjustUserSp(id, amount) {
-  const { data } = await api.post(`/admin/users/${id}/sp`, { amount });
-  return data;
-}
-
-export async function adminGetSpLedger(params) {
-  const { data } = await api.get('/admin/sp-ledger', { params });
-  return data;
-}
-
 // Community integrations for Master FAQs creation
 export async function adminGetCommunityMasterCandidates() {
   const { data } = await api.get('/admin/community/master-candidates');
@@ -202,7 +150,9 @@ export async function adminRunGlobalAiCluster(apiKey) {
 }
 
 export async function adminGetCommunityQuestions(params) {
-  const { data } = await api.get('/admin/community/questions', { params });
+  // Using the public endpoint for fetching since it doesn't strictly need admin auth,
+  // but we can query it easily. If we had an admin-specific list, we'd use it here.
+  const { data } = await api.get('/community/questions', { params });
   return data;
 }
 
@@ -211,17 +161,14 @@ export async function adminDeleteCommunityQuestion(id) {
   return data;
 }
 
-export async function adminGetManualClusters() {
-  const { data } = await api.get('/admin/community/manual-clusters');
+export default api;
+
+// ── New: Admin Answer & Pin Controls ─────────────────────────────────────────
+export async function adminPostCommunityAnswer(questionId, answerText) {
+  const { data } = await api.post(`/admin/community/questions/${questionId}/answer`, { answerText });
   return data;
 }
 
-export async function adminPostCommunityAnswer(questionId, text) {
-  const { data } = await api.post(`/admin/community/questions/${questionId}/answer`, { text });
-  return data;
-}
-
-// ── Admin Pin Feature ─────────────────────────────────────────────────────
 export async function adminPinAnswer(answerId) {
   const { data } = await api.post(`/admin/community/answers/${answerId}/pin`);
   return data;
@@ -231,6 +178,9 @@ export async function adminUnpinAnswer(answerId) {
   const { data } = await api.post(`/admin/community/answers/${answerId}/unpin`);
   return data;
 }
-// ─────────────────────────────────────────────────────────────────────────
 
-export default api;
+// ── New: Manual Cluster (no AI) ───────────────────────────────────────────────
+export async function adminGetManualClusters() {
+  const { data } = await api.get('/admin/community/manual-clusters');
+  return data;
+}

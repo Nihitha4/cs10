@@ -60,17 +60,29 @@ const answerSchema = new mongoose.Schema({
       edited_at: { type: Date, default: Date.now },
     }
   ],
+
+  // ── Admin Pin Feature ─────────────────────────────────────────
+  isPinned:  { type: Boolean, default: false, index: true },
+  pinnedBy:  { type: mongoose.Schema.Types.ObjectId, ref: 'AdminUser', default: null },
+  pinnedAt:  { type: Date, default: null },
+  isAdminAnswer: { type: Boolean, default: false },
+  weightedScore: { type: Number, default: 0, index: true },
+  // ─────────────────────────────────────────────────────────────
+
   created_at: {
     type: Date,
     default: Date.now,
   },
 });
 
-// Indexes
+// Existing Indexes
 answerSchema.index({ question_id: 1, status: 1 });
 answerSchema.index({ answered_by: 1 });
 answerSchema.index({ status: 1, created_at: 1 });
 answerSchema.index({ net_score: -1 });
+
+// Pin Feature Index
+answerSchema.index({ question_id: 1, isPinned: -1, weightedScore: -1 });
 
 const Answer = mongoose.model('Answer', answerSchema);
 export default Answer;
